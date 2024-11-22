@@ -711,7 +711,7 @@ async fn filter_invalid_attribute_array() {
     index.wait_task(task.uid()).await;
 
     let expected_response = json!({
-        "message": "Attribute `many` is not filterable. Available filterable attributes are: `title`.\n1:5 many = Glass",
+        "message": format!("Index `{}`: Attribute `many` is not filterable. Available filterable attributes are: `title`.\n1:5 many = Glass", index.uid),
         "code": "invalid_search_filter",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_search_filter"
@@ -733,7 +733,7 @@ async fn filter_invalid_attribute_string() {
     index.wait_task(task.uid()).await;
 
     let expected_response = json!({
-        "message": "Attribute `many` is not filterable. Available filterable attributes are: `title`.\n1:5 many = Glass",
+        "message": format!("Index `{}`: Attribute `many` is not filterable. Available filterable attributes are: `title`.\n1:5 many = Glass", index.uid),
         "code": "invalid_search_filter",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_search_filter"
@@ -940,7 +940,7 @@ async fn sort_unsortable_attribute() {
     index.wait_task(response.uid()).await.succeeded();
 
     let expected_response = json!({
-        "message": "Attribute `title` is not sortable. Available sortable attributes are: `id`.",
+        "message": format!("Index `{}`: Attribute `title` is not sortable. Available sortable attributes are: `id`.", index.uid),
         "code": "invalid_search_sort",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_search_sort"
@@ -998,7 +998,7 @@ async fn sort_unset_ranking_rule() {
     index.wait_task(response.uid()).await.succeeded();
 
     let expected_response = json!({
-        "message": "You must specify where `sort` is listed in the rankingRules setting to use the sort parameter at search time.",
+        "message": format!("Index `{}`: You must specify where `sort` is listed in the rankingRules setting to use the sort parameter at search time.", index.uid),
         "code": "invalid_search_sort",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_search_sort"
@@ -1018,8 +1018,8 @@ async fn sort_unset_ranking_rule() {
 
 #[actix_rt::test]
 async fn search_on_unknown_field() {
-    let server = Server::new_shared();
-    let index = server.unique_index();
+    let server = Server::new().await;
+    let index = server.index("test");
     let (response, _code) =
         index.update_settings_searchable_attributes(json!(["id", "title"])).await;
     index.wait_task(response.uid()).await.succeeded();
@@ -1031,7 +1031,7 @@ async fn search_on_unknown_field() {
                 snapshot!(code, @"400 Bad Request");
                 snapshot!(json_string!(response), @r###"
                 {
-                  "message": "Attribute `unknown` is not searchable. Available searchable attributes are: `id, title`.",
+                  "message": "Index `test`: Attribute `unknown` is not searchable. Available searchable attributes are: `id, title`.",
                   "code": "invalid_search_attributes_to_search_on",
                   "type": "invalid_request",
                   "link": "https://docs.meilisearch.com/errors#invalid_search_attributes_to_search_on"
@@ -1044,8 +1044,8 @@ async fn search_on_unknown_field() {
 
 #[actix_rt::test]
 async fn search_on_unknown_field_plus_joker() {
-    let server = Server::new_shared();
-    let index = server.unique_index();
+    let server = Server::new().await;
+    let index = server.index("test");
     let (response, _code) =
         index.update_settings_searchable_attributes(json!(["id", "title"])).await;
     index.wait_task(response.uid()).await.succeeded();
@@ -1057,7 +1057,7 @@ async fn search_on_unknown_field_plus_joker() {
                 snapshot!(code, @"400 Bad Request");
                 snapshot!(json_string!(response), @r###"
                 {
-                  "message": "Attribute `unknown` is not searchable. Available searchable attributes are: `id, title`.",
+                  "message": "Index `test`: Attribute `unknown` is not searchable. Available searchable attributes are: `id, title`.",
                   "code": "invalid_search_attributes_to_search_on",
                   "type": "invalid_request",
                   "link": "https://docs.meilisearch.com/errors#invalid_search_attributes_to_search_on"
@@ -1074,7 +1074,7 @@ async fn search_on_unknown_field_plus_joker() {
                 snapshot!(code, @"400 Bad Request");
                 snapshot!(json_string!(response), @r###"
                 {
-                  "message": "Attribute `unknown` is not searchable. Available searchable attributes are: `id, title`.",
+                  "message": "Index `test`: Attribute `unknown` is not searchable. Available searchable attributes are: `id, title`.",
                   "code": "invalid_search_attributes_to_search_on",
                   "type": "invalid_request",
                   "link": "https://docs.meilisearch.com/errors#invalid_search_attributes_to_search_on"
@@ -1087,8 +1087,8 @@ async fn search_on_unknown_field_plus_joker() {
 
 #[actix_rt::test]
 async fn distinct_at_search_time() {
-    let server = Server::new_shared();
-    let index = server.unique_index();
+    let server = Server::new().await;
+    let index = server.index("test");
     let (task, _) = index.create(None).await;
     index.wait_task(task.uid()).await.succeeded();
 
@@ -1097,7 +1097,7 @@ async fn distinct_at_search_time() {
     snapshot!(code, @"400 Bad Request");
     snapshot!(response, @r###"
     {
-      "message": "Attribute `doggo.truc` is not filterable and thus, cannot be used as distinct attribute. This index does not have configured filterable attributes.",
+      "message": "Index `test`: Attribute `doggo.truc` is not filterable and thus, cannot be used as distinct attribute. This index does not have configured filterable attributes.",
       "code": "invalid_search_distinct",
       "type": "invalid_request",
       "link": "https://docs.meilisearch.com/errors#invalid_search_distinct"
@@ -1112,7 +1112,7 @@ async fn distinct_at_search_time() {
     snapshot!(code, @"400 Bad Request");
     snapshot!(response, @r###"
     {
-      "message": "Attribute `doggo.truc` is not filterable and thus, cannot be used as distinct attribute. Available filterable attributes are: `color, machin`.",
+      "message": "Index `test`: Attribute `doggo.truc` is not filterable and thus, cannot be used as distinct attribute. Available filterable attributes are: `color, machin`.",
       "code": "invalid_search_distinct",
       "type": "invalid_request",
       "link": "https://docs.meilisearch.com/errors#invalid_search_distinct"
@@ -1127,7 +1127,7 @@ async fn distinct_at_search_time() {
     snapshot!(code, @"400 Bad Request");
     snapshot!(response, @r###"
     {
-      "message": "Attribute `doggo.truc` is not filterable and thus, cannot be used as distinct attribute. Available filterable attributes are: `color, <..hidden-attributes>`.",
+      "message": "Index `test`: Attribute `doggo.truc` is not filterable and thus, cannot be used as distinct attribute. Available filterable attributes are: `color, <..hidden-attributes>`.",
       "code": "invalid_search_distinct",
       "type": "invalid_request",
       "link": "https://docs.meilisearch.com/errors#invalid_search_distinct"

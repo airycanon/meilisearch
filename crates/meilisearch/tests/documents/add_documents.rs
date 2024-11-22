@@ -1462,7 +1462,7 @@ async fn error_document_field_limit_reached_over_multiple_documents() {
         "indexedDocuments": 0
       },
       "error": {
-        "message": "A document cannot contain more than 65,535 fields.",
+        "message": "Index `test`: A document cannot contain more than 65,535 fields.",
         "code": "max_fields_limit_exceeded",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#max_fields_limit_exceeded"
@@ -2279,7 +2279,7 @@ async fn add_invalid_geo_and_then_settings() {
         ]
       },
       "error": {
-        "message": "Could not parse latitude in the document with the id: `\"11\"`. Was expecting a finite number but instead got `null`.",
+        "message": "Index `test`: Could not parse latitude in the document with the id: `\"11\"`. Was expecting a finite number but instead got `null`.",
         "code": "invalid_document_geo_field",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_document_geo_field"
